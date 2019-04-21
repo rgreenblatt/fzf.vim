@@ -1225,6 +1225,38 @@ function! fzf#vim#buffer_commits(...)
 endfunction
 
 " ------------------------------------------------------------------
+" Wipeouts
+" ------------------------------------------------------------------
+let s:default_wipeout_command = 'bwipeout'
+
+function! s:bwipeout(lines)
+  if len(a:lines) < 2
+    return
+  endif
+
+  let l:wipeout_command = get(g:, 'fzf_wipeout_command', s:default_wipeout_command)
+
+  for l:line in a:lines[1:]
+    let l:index = matchstr(l:line, '^\[\([0-9a-f]\+\)\]')
+    execute(l:wipeout_command . ' ' . index[1:len(index)-2])
+  endfor
+endfunction
+
+function! fzf#vim#wipeout_buffers(...)
+  let [query, args] = (a:0 && type(a:1) == type('')) ?
+        \ [a:1, a:000[1:]] : ['', a:000]
+  let expect_keys = join(keys(get(g:, 'fzf_action', s:default_action)), ',')
+  return s:fzf('wipeout_buffers', {
+  \ 'source':  map(s:buflisted_sorted(), 's:format_buffer(v:val)'),
+  \ 'sink*':   s:function('s:bwipeout'),
+  \ 'options': [
+  \   '-m', '-x', '--tiebreak=index', '--ansi', '-d',
+  \   '\t', '-n', '2,1..2', '--prompt', 'Wipeout> ', '--query', query,
+  \   '--expect='.expect_keys]
+  \}, args)
+endfunction
+
+" ------------------------------------------------------------------
 " fzf#vim#maps(mode, opts[with count and op])
 " ------------------------------------------------------------------
 function! s:align_pairs(list)

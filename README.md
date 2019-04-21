@@ -166,6 +166,9 @@ let g:fzf_tags_command = 'ctags -R'
 
 " [Commands] --expect expression for directly executing the command
 let g:fzf_commands_expect = 'alt-enter,ctrl-x'
+
+" [Wipeouts] A command to close selected buffer
+let g:fzf_wipeout_command = 'bwipeout'
 ```
 
 #### Advanced customization
