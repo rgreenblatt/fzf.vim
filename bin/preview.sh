@@ -43,12 +43,19 @@ FIRST=$(($CENTER-$LINES/3))
 FIRST=$(($FIRST < 1 ? 1 : $FIRST))
 LAST=$((${FIRST}+${LINES}-1))
 
+export FZF_PREVIEW_COMMAND="nvr -c 'call FloatingFZFPreview(\"{}\", \"<>\")'"
+
 DEFAULT_COMMAND="bat --style=numbers --color=always {} || highlight -O ansi -l {} || coderay {} || rougify {} || cat {}"
 CMD=${FZF_PREVIEW_COMMAND:-$DEFAULT_COMMAND}
 CMD=${CMD//{\}/$(printf %q "$FILE")}
+CMD=${CMD//<>/$(printf %q "$CENTER")}
 
-eval "$CMD" 2> /dev/null | awk "NR >= $FIRST && NR <= $LAST { \
-    if (NR == $CENTER) \
-        { gsub(/\x1b[[0-9;]*m/, \"&$REVERSE\"); printf(\"$REVERSE%s\n$RESET\", \$0); } \
-    else printf(\"$RESET%s\n\", \$0); \
-    }"
+if [ $FZF_EXACT_PREVIEW ]; then
+  eval "$CMD" 2> /dev/null
+else
+  eval "$CMD" 2> /dev/null | awk "NR >= $FIRST && NR <= $LAST { \
+      if (NR == $CENTER) \
+          { gsub(/\x1b[[0-9;]*m/, \"&$REVERSE\"); printf(\"$REVERSE%s\n$RESET\", \$0); } \
+      else printf(\"$RESET%s\n\", \$0); \
+      }"
+fi
