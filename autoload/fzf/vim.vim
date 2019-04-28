@@ -550,11 +550,13 @@ function! fzf#vim#gitfiles(args, ...)
     return s:warn('Not in git repo')
   endif
   if a:args != '?'
-    return s:fzf('gfiles', {
-    \ 'source':  'git ls-files '.a:args.(s:is_win ? '' : ' | uniq'),
-    \ 'dir':     root,
-    \ 'options': '-m --prompt "GitFiles> "'
-    \}, a:000)
+    let args = {
+          \ 'source':  'git ls-files '.a:args.(s:is_win ? '' : ' | uniq'),
+          \ 'dir':     root,
+          \ 'options': '-m --prompt "GitFiles> "'
+          \}
+    call s:merge_opts(args, get(g:, 'fzf_gfiles_options', []))
+    return s:fzf('gfiles', args, a:000)
   endif
 
   " Here be dragons!
