@@ -666,7 +666,7 @@ function! s:ag_to_qf(line, with_column)
   return dict
 endfunction
 
-function! s:ag_handler(lines, with_column)
+function! AgHandler(lines, with_column)
   if len(a:lines) < 2
     return
   endif
@@ -731,7 +731,7 @@ function! fzf#vim#grep(grep_command, with_column, ...)
   \             '--color', 'hl:4,hl+:12']
   \}
   function! opts.sink(lines)
-    return s:ag_handler(a:lines, self.column)
+    return AgHandler(a:lines, self.column)
   endfunction
   let opts['sink*'] = remove(opts, 'sink')
   return s:fzf(name, opts, a:000)
