@@ -643,13 +643,23 @@ function! s:buflisted_sorted()
   return sort(s:buflisted(), 's:sort_buffers')
 endfunction
 
+function! fzf#vim#preview_buffer(line)
+  let b = str2nr(matchstr(a:line, '\[\zs[0-9]*\ze\]'))
+  let lnum = getbufinfo(b)[0].lnum
+  let lines = getbufline(b, max([lnum - 20, 0]), lnum + 50)
+
+  return join(lines, "\n")
+endfunction
+
 function! fzf#vim#buffers(...)
   let [query, args] = (a:0 && type(a:1) == type('')) ?
         \ [a:1, a:000[1:]] : ['', a:000]
   return s:fzf('buffers', {
   \ 'source':  map(s:buflisted_sorted(), 's:format_buffer(v:val)'),
   \ 'sink*':   s:function('s:bufopen'),
-  \ 'options': ['+m', '-x', '--tiebreak=index', '--header-lines=1', '--ansi', '-d', '\t', '-n', '2,1..2', '--prompt', 'Buf> ', '--query', query]
+  \ 'options': ['+m', '-x', '--tiebreak=index', '--header-lines=1', '--ansi', 
+  \ '-d', '\t', '-n', '2,1..2', '--prompt', 'Buf> ', '--query', query,
+  \ '--preview', 'nvr --remote-expr "fzf#vim#preview_buffer(\"{}\")"']
   \}, args)
 endfunction
 
