@@ -39,6 +39,8 @@ if [ -z "$LINES" ]; then
   fi
 fi
 
+COLORTERM="truecolor"
+
 FIRST=$(($CENTER-$LINES/3))
 FIRST=$(($FIRST < 1 ? 1 : $FIRST))
 LAST=$((${FIRST}+${LINES}-1))
