@@ -622,7 +622,7 @@ endfunction
 function! s:format_buffer(b)
   let name = bufname(a:b)
   let is_terminal = name =~? 'term://.*$'
-  let name = is_terminal ? getbufvar(a:b, 'term_title') : name
+  let name = is_terminal ? 'term: ' . getbufvar(a:b, 'term_title') : name
   let name = empty(name) ? '[No Name]' : fnamemodify(name, ":p:~:.")
   let flag = a:b == bufnr('')  ? s:blue('%', 'Conditional') :
           \ (a:b == bufnr('#') ? s:magenta('#', 'Special') : ' ')
@@ -1250,7 +1250,17 @@ endfunction
 " ------------------------------------------------------------------
 " Wipeouts
 " ------------------------------------------------------------------
-let s:default_wipeout_command = 'bwipeout'
+function! s:force_wipeout_if_term(bufid)
+  let is_term = getbufvar(a:bufid, '&buftype', 'ERROR') == 'terminal'
+  if is_term
+    execute "bdelete!" . a:bufid
+  else
+    execute "bdelete" . a:bufid
+  endif
+endfunction
+command! -nargs=1 FZFBufferDeleteIDIfTerm call s:force_wipeout_if_term(<args>)
+
+let s:default_wipeout_command = "FZFBufferDeleteIDIfTerm"
 
 function! s:bwipeout(lines)
   if len(a:lines) < 2
@@ -1275,6 +1285,7 @@ function! fzf#vim#wipeout_buffers(...)
   \ 'options': [
   \   '-m', '-x', '--tiebreak=index', '--ansi', '-d',
   \   '\t', '-n', '2,1..2', '--prompt', 'Wipeout> ', '--query', query,
+  \ '--preview', 'nvr --remote-expr "fzf#vim#preview_buffer(\"{}\")"',
   \   '--expect='.expect_keys]
   \}, args)
 endfunction
